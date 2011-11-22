@@ -1,7 +1,5 @@
-function scheme(source) {
+function read(source) {
   var position = 0;
-  
-  
   
   //_________________________________________________________________________//
   // Source reading (getc, ungetc, peek and removeWhitespace)
@@ -171,12 +169,71 @@ function scheme(source) {
 
 
 //___________________________________________________________________________//
+// Environments
+//___________________________________________________________________________//
+
+var globalEnvironment = { 'hello':"world", 'bye':"everybody" };
+
+function lookupSymbolValue(sym) {
+  return globalEnvironment[sym];
+}
+
+
+
+//___________________________________________________________________________//
+// Eval
+//___________________________________________________________________________//
+
+
+
+function scheme_eval(expr) {
+  var type = typeof expr;
+  if (type === 'object') { type = expr.type }
+  
+  if (type === "number" || type === "boolean" || type === "string") {
+    return expr;
+  }
+  else if (type === "symbol") {
+    var v = lookupSymbolValue(expr.data);
+    return v;
+  }
+  else {
+    return "Eval - Not implemented"
+  }
+}
+
+
+
+//___________________________________________________________________________//
+// Print
+//___________________________________________________________________________//
+
+
+
+function print(expr) {
+  var type = typeof expr;
+  if (type === 'object') { type = expr.type }
+  
+  if (type === "number" || type === "boolean" || type === "string" || type === "symbol") {
+    return expr;
+  }
+  else {
+    return "Eval - Not implemented"
+  }
+}
+
+
+
+
+
+//___________________________________________________________________________//
 // Tests
 //___________________________________________________________________________//
 
+// Test read
 (function () {
   function st(test, expected) {
-    var ret_val = scheme(test),
+    var ret_val = read(test),
         ret_type = ret_val.type;
     if (ret_type === "symbol") {
       ret_val = ret_val.data;
@@ -211,9 +268,49 @@ function scheme(source) {
   // Strings
   st('"I am string"', "I am string");
   
-  
 })();
 
+
+//Test eval
+(function () {
+  function st(test, expected) {
+    var ret_val = scheme_eval(read(test)),
+        ret_type = ret_val.type;
+     if (ret_type === "symbol") {
+       ret_val = ret_val.data;
+     }
+    if (ret_val !== expected) {
+      console.log("test failed: "+test);
+    }
+  }
+  
+  // Numbers
+  st("42", 42);
+  st("  36", 36);
+  st(" 24 ", 24);
+  st(".53", .53);
+  st("2.45", 2.45);
+  st("-24", -24);
+  st("-.42", -.42);
+  
+  // Booleans
+  st("#t", true);
+  st("#f", false);
+  st("#c", "Error: boolean value must be either #t or #f; not #c");
+
+  // Characters
+  st("#\\c", 'c');
+  st("#\\newline", "\n");
+  st("#\\space", " ");
+  
+  // Symbols
+  st("hello", "world");
+  st("bye", "everybody");
+  
+  // Strings
+  st('"I am string"', "I am string");
+  
+})();
 
 
 //___________________________________________________________________________//
@@ -224,7 +321,7 @@ function scheme(source) {
 $(document).ready(function () {
   $("#run").click(function () {
     var source = $("#entry").val(),
-        output = scheme(source),
+        output = print(scheme_eval(read(source))),
         output_text = "> "+source+"\n"+output
     $("#output").val(output_text);
     $("#entry").val("");
