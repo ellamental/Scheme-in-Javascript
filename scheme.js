@@ -25,18 +25,24 @@ function scheme(source) {
     var numerics = ".0123456789";
     if (numerics.indexOf(c) < 0) {
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
   
   function isDelimiter(c) {
     var delims = ' ()";\n';
     if (delims.indexOf(c) >= 0 || c === undefined) {
       return true;
-    } else {
-      return false;
     }
+    return false;
+  }
+  
+  function isInitial(c) {
+    var symbols = "-+*/><=?!&"
+    if (/^[a-zA-Z]$/.test(c) || (symbols.indexOf(c) >= 0)) {
+      return true;
+    }
+    return false;
   }
   
   function readNumber() {
@@ -78,14 +84,36 @@ function scheme(source) {
     }
   }
   
+  function readSymbol() {
+    var s = "",
+        c = getc();
+    while (!isDelimiter(c)) {
+      s = s + c;
+      c = getc();
+    }
+    return s;
+  }
+  
+  function readString() {
+    var s = "",
+        c = getc();
+    while (c !== '"') {
+      s = s + c;
+      c = getc();
+    }
+    return s;
+  }
+  
   function read() {
     remove_whitespace();
     c = getc();
     if (c) {
+      // Numbers
       if ( isNumeric(c) || (c === '-' && isNumeric(peek())) ) {
         ungetc();
         return readNumber();
       }
+      // Booleans and Characters
       else if ( c === '#' ) {
         c = getc();
         if ( c === 't') {
@@ -100,6 +128,15 @@ function scheme(source) {
         else {
           return "Error: boolean value must be either #t or #f; not #"+c;
         }
+      }
+      // Symbols
+      else if ( isInitial(c) ) {
+        ungetc();
+        return readSymbol();
+      }
+      // Strings
+      else if ( c === '"' ) {
+        return readString();
       }
       else {
         return "Reader - Not implemented";
@@ -138,6 +175,13 @@ function scheme(source) {
   st("#\\c", 'c');
   st("#\\newline", "\n");
   st("#\\space", " ");
+  
+  // Symbols
+  st("hello", "hello");
+  
+  // Strings
+  st('"I am string"', "I am string");
+  
   
 })();
 
