@@ -72,6 +72,7 @@ function read(source) {
       s = s + c;
       c = getc();
     }
+    ungetc();
     return Number(s);
   }
   
@@ -79,6 +80,7 @@ function read(source) {
     var c = getc();
     if (c === 'n') {
       if (source.substring(position, position+7) === 'ewline') {
+        position += 7;
         return '\n';
       } else if (isDelimiter(peek())) {
         return 'n';
@@ -88,6 +90,7 @@ function read(source) {
     }
     else if (c === 's') {
       if (source.substring(position, position+4) === 'pace') {
+        position += 4;
         return ' ';
       } else if (isDelimiter(peek())) {
         return 's';
@@ -107,6 +110,7 @@ function read(source) {
       s = s + c;
       c = getc();
     }
+    ungetc();
     return s;
   }
   
@@ -127,11 +131,17 @@ function read(source) {
   //_________________________________________________________________________//
   
   function readPair() {
-    removeWhitespace()
-    var c = getc()
+    removeWhitespace();
+    var c = getc(),
+        car, cdr;
     if (c === ')') {
       return { 'type': "the_empty_list" };
     }
+    ungetc();
+    car = read();
+    removeWhitespace();
+    cdr = readPair();
+    return { 'type': "pair", 'car': car, 'cdr': cdr };
   }
   
   
@@ -218,6 +228,9 @@ function scheme_eval(expr) {
   else if (type === "the_empty_list") {
     return { 'type': "the_empty_list" } 
   }
+  else if (type === "pair") {
+    return expr;
+  }
   else {
     return "Eval - Not implemented"
   }
@@ -229,15 +242,31 @@ function scheme_eval(expr) {
 // Print
 //___________________________________________________________________________//
 
+function printPair(expr) {
+  var s = "";
+  while (expr.cdr.type !== "the_empty_list") {
+    s = s + print(expr.car) + ' ';
+    expr = expr.cdr;
+  }
+  s = s + print(expr.car)
+  return s;
+}
+
 function print(expr) {
   var type = typeof expr;
   if (type === 'object') { type = expr.type }
   
-  if (type === "number" || type === "boolean" || type === "string" || type === "symbol") {
+  if (type === "number" || type === "boolean" || type === "string") {
     return expr;
+  }
+  else if (type === "symbol") {
+    return expr.data;
   }
   else if (type === "the_empty_list") {
     return "()";
+  }
+  else if (type === "pair") {
+    return "("+printPair(expr)+")";
   }
   else {
     return "Eval - Not implemented"
