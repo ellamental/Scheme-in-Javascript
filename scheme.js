@@ -1,6 +1,12 @@
 function scheme(source) {
   var position = 0;
   
+  
+  
+  //_________________________________________________________________________//
+  // Source reading (getc, ungetc, peek and removeWhitespace)
+  //_________________________________________________________________________//
+  
   function getc() {
     var c = source[position];
     position += 1;
@@ -15,11 +21,17 @@ function scheme(source) {
     return source[position+1];
   }
   
-  function remove_whitespace() {
+  function removeWhitespace() {
     while (source[position] === ' ') {
       position += 1;
     }
   }
+  
+  
+  
+  //_________________________________________________________________________//
+  // Character tests (isNumeric, isDelimiter, isInitial)
+  //_________________________________________________________________________//
   
   function isNumeric(c) {
     var numerics = ".0123456789";
@@ -45,6 +57,12 @@ function scheme(source) {
     return false;
   }
   
+  
+  
+  //_________________________________________________________________________//
+  // Read functions
+  //_________________________________________________________________________//
+    
   function readNumber() {
     var s = "",
         c = getc();
@@ -105,7 +123,7 @@ function scheme(source) {
   }
   
   function read() {
-    remove_whitespace();
+    removeWhitespace();
     c = getc();
     if (c) {
       // Numbers
@@ -150,6 +168,12 @@ function scheme(source) {
   return read();
 }
 
+
+
+//___________________________________________________________________________//
+// Tests
+//___________________________________________________________________________//
+
 (function () {
   function st(test, expected) {
     if (scheme(test) !== expected) {
@@ -185,6 +209,11 @@ function scheme(source) {
   
 })();
 
+
+
+//___________________________________________________________________________//
+// REPL
+//___________________________________________________________________________//
 
 // A simple and very limited repl
 $(document).ready(function () {
