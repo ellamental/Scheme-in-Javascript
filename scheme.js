@@ -53,6 +53,31 @@ function scheme(source) {
     return Number(s);
   }
   
+  function readCharacter() {
+    var c = getc();
+    if (c === 'n') {
+      if (source.substring(position, position+7) === 'ewline') {
+        return '\n';
+      } else if (isDelimiter(peek())) {
+        return 'n';
+      } else {
+        return "Error character does not match."
+      }
+    }
+    else if (c === 's') {
+      if (source.substring(position, position+4) === 'pace') {
+        return ' ';
+      } else if (isDelimiter(peek())) {
+        return 's';
+      } else {
+        return "Error character does not match."
+      }
+    }
+    else {
+      return c;
+    }
+  }
+  
   function read() {
     remove_whitespace();
     c = getc();
@@ -68,6 +93,9 @@ function scheme(source) {
         }
         else if ( c === 'f' ) {
           return false;
+        }
+        else if ( c === '\\' ) {
+          return readCharacter();
         }
         else {
           return "Error: boolean value must be either #t or #f; not #"+c;
@@ -106,6 +134,11 @@ function scheme(source) {
   st("#f", false);
   st("#c", "Error: boolean value must be either #t or #f; not #c");
 
+  // Characters
+  st("#\\c", 'c');
+  st("#\\newline", "\n");
+  st("#\\space", " ");
+  
 })();
 
 
