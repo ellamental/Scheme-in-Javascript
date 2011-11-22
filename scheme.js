@@ -150,7 +150,7 @@ function scheme(source) {
       // Symbols
       else if ( isInitial(c) ) {
         ungetc();
-        return readSymbol();
+        return { 'type': 'symbol', 'data': readSymbol() };
       }
       // Strings
       else if ( c === '"' ) {
@@ -176,7 +176,12 @@ function scheme(source) {
 
 (function () {
   function st(test, expected) {
-    if (scheme(test) !== expected) {
+    var ret_val = scheme(test),
+        ret_type = ret_val.type;
+    if (ret_type === "symbol") {
+      ret_val = ret_val.data;
+    }
+    if (ret_val !== expected) {
       console.log("test failed: "+test);
     }
   }
