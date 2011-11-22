@@ -61,6 +61,18 @@ function scheme(source) {
         ungetc();
         return readNumber();
       }
+      else if ( c === '#' ) {
+        c = getc();
+        if ( c === 't') {
+          return true;
+        }
+        else if ( c === 'f' ) {
+          return false;
+        }
+        else {
+          return "Error: boolean value must be either #t or #f; not #"+c;
+        }
+      }
       else {
         return "Reader - Not implemented";
       }
@@ -88,6 +100,11 @@ function scheme(source) {
   st("2.45", 2.45);
   st("-24", -24);
   st("-.42", -.42);
+  
+  // Booleans
+  st("#t", true);
+  st("#f", false);
+  st("#c", "Error: boolean value must be either #t or #f; not #c");
 
 })();
 
