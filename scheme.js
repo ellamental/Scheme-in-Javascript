@@ -22,7 +22,7 @@ function scheme(source) {
   }
   
   function isNumeric(c) {
-    var numerics = "-.0123456789";
+    var numerics = ".0123456789";
     if (numerics.indexOf(c) < 0) {
       return false;
     } else {
@@ -42,6 +42,10 @@ function scheme(source) {
   function readNumber() {
     var s = "",
         c = getc();
+    if (c === '-') {
+      s = "-";
+      c = getc();
+    }
     while (!isDelimiter(c) && isNumeric(c)) {
       s = s + c;
       c = getc();
@@ -53,7 +57,7 @@ function scheme(source) {
     remove_whitespace();
     c = getc();
     if (c) {
-      if (isNumeric(c)) {
+      if ( isNumeric(c) || (c === '-' && isNumeric(peek())) ) {
         ungetc();
         return readNumber();
       }
@@ -68,6 +72,24 @@ function scheme(source) {
   
   return read();
 }
+
+(function () {
+  function st(test, expected) {
+    if (scheme(test) !== expected) {
+      console.log("test failed: "+test);
+    }
+  }
+  
+  // Numbers
+  st("42", 42);
+  st("  36", 36);
+  st(" 24 ", 24);
+  st(".53", .53);
+  st("2.45", 2.45);
+  st("-24", -24);
+  st("-.42", -.42);
+
+})();
 
 
 // A simple and very limited repl
