@@ -1,0 +1,16 @@
+body {
+  text-align: center;
+}
+
+textarea {
+  width: 600px;
+  height: 400px;
+}
+
+#output {
+  margin: auto;
+  width: 600px;
+  height: 400px;
+  background-color: #DDD;
+  text-align: left;
+}
