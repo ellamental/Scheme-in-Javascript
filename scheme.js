@@ -120,6 +120,21 @@ function read(source) {
     return s;
   }
   
+  
+  
+  //_________________________________________________________________________//
+  // read and readPair
+  //_________________________________________________________________________//
+  
+  function readPair() {
+    removeWhitespace()
+    var c = getc()
+    if (c === ')') {
+      return { 'type': "the_empty_list" };
+    }
+  }
+  
+  
   function read() {
     removeWhitespace();
     c = getc();
@@ -154,6 +169,11 @@ function read(source) {
       else if ( c === '"' ) {
         return readString();
       }
+      // Read Pair
+      else if ( c === '(' ) {
+        return readPair();
+      }
+      // Not Implemented
       else {
         return "Reader - Not implemented";
       }
@@ -184,8 +204,6 @@ function lookupSymbolValue(sym) {
 // Eval
 //___________________________________________________________________________//
 
-
-
 function scheme_eval(expr) {
   var type = typeof expr;
   if (type === 'object') { type = expr.type }
@@ -196,6 +214,9 @@ function scheme_eval(expr) {
   else if (type === "symbol") {
     var v = lookupSymbolValue(expr.data);
     return v;
+  }
+  else if (type === "the_empty_list") {
+    return { 'type': "the_empty_list" } 
   }
   else {
     return "Eval - Not implemented"
@@ -208,8 +229,6 @@ function scheme_eval(expr) {
 // Print
 //___________________________________________________________________________//
 
-
-
 function print(expr) {
   var type = typeof expr;
   if (type === 'object') { type = expr.type }
@@ -217,12 +236,13 @@ function print(expr) {
   if (type === "number" || type === "boolean" || type === "string" || type === "symbol") {
     return expr;
   }
+  else if (type === "the_empty_list") {
+    return "()";
+  }
   else {
     return "Eval - Not implemented"
   }
 }
-
-
 
 
 
@@ -237,6 +257,9 @@ function print(expr) {
         ret_type = ret_val.type;
     if (ret_type === "symbol") {
       ret_val = ret_val.data;
+    }
+    else if (ret_type === "the_empty_list") {
+      ret_val = ret_val.type;
     }
     if (ret_val !== expected) {
       console.log("test failed: "+test);
@@ -268,6 +291,9 @@ function print(expr) {
   // Strings
   st('"I am string"', "I am string");
   
+  // Lists
+  st("()", "the_empty_list");
+  
 })();
 
 
@@ -279,6 +305,9 @@ function print(expr) {
      if (ret_type === "symbol") {
        ret_val = ret_val.data;
      }
+    else if (ret_type === "the_empty_list") {
+      ret_val = ret_val.type;
+    }
     if (ret_val !== expected) {
       console.log("test failed: "+test);
     }
@@ -310,7 +339,9 @@ function print(expr) {
   // Strings
   st('"I am string"', "I am string");
   
+  
 })();
+
 
 
 //___________________________________________________________________________//
