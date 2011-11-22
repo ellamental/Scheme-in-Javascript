@@ -21,11 +21,45 @@ function scheme(source) {
     }
   }
   
+  function isNumeric(c) {
+    var numerics = "-.0123456789";
+    if (numerics.indexOf(c) < 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  
+  function isDelimiter(c) {
+    var delims = ' ()";\n';
+    if (delims.indexOf(c) >= 0 || c === undefined) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  function readNumber() {
+    var s = "",
+        c = getc();
+    while (!isDelimiter(c) && isNumeric(c)) {
+      s = s + c;
+      c = getc();
+    }
+    return Number(s);
+  }
+  
   function read() {
     remove_whitespace();
     c = getc();
     if (c) {
-      return "Representation of a Scheme type";
+      if (isNumeric(c)) {
+        ungetc();
+        return readNumber();
+      }
+      else {
+        return "Reader - Not implemented";
+      }
     }
     else {
       return "Not implemented";
