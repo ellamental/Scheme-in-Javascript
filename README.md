@@ -1,4 +1,4 @@
-* Scheme in Javascript
+* Scheme in Javascript *
 
 Yet another Scheme interpreter written in Javascript this time.  This project 
 is not intend to be accompanied by a step-by-step tutorial series, however 
