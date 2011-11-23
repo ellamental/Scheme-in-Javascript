@@ -208,6 +208,10 @@ function lookupSymbolValue(sym) {
   return globalEnvironment[sym];
 }
 
+function setSymbolValue(sym, val) {
+  globalEnvironment[sym] = val;
+}
+
 
 
 //___________________________________________________________________________//
@@ -229,7 +233,16 @@ function scheme_eval(expr) {
     return { 'type': "the_empty_list" } 
   }
   else if (type === "pair") {
-    return expr;
+    var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
+    if (s === "define") {
+      var sym = expr.cdr.car.data,
+          val = scheme_eval(expr.cdr.cdr.car);
+      setSymbolValue(sym, val);
+      return "value set!";
+    }
+    else {
+      return "symbol not found";
+    }
   }
   else {
     return "Eval - Not implemented"
