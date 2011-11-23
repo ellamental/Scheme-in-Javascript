@@ -1,4 +1,5 @@
 function read(source) {
+  "use strict";
   var position = 0;
   
   //_________________________________________________________________________//
@@ -48,7 +49,7 @@ function read(source) {
   }
   
   function isInitial(c) {
-    var symbols = "-+*/><=?!&"
+    var symbols = "-+*/><=?!&";
     if (/^[a-zA-Z]$/.test(c) || (symbols.indexOf(c) >= 0)) {
       return true;
     }
@@ -85,7 +86,7 @@ function read(source) {
       } else if (isDelimiter(peek())) {
         return 'n';
       } else {
-        return "Error character does not match."
+        return "Error character does not match.";
       }
     }
     else if (c === 's') {
@@ -95,7 +96,7 @@ function read(source) {
       } else if (isDelimiter(peek())) {
         return 's';
       } else {
-        return "Error character does not match."
+        return "Error character does not match.";
       }
     }
     else {
@@ -127,7 +128,7 @@ function read(source) {
   
   
   //_________________________________________________________________________//
-  // read and readPair
+  // readExpr and readPair
   //_________________________________________________________________________//
   
   function readPair() {
@@ -138,16 +139,16 @@ function read(source) {
       return { 'type': "the_empty_list" };
     }
     ungetc();
-    car = read();
+    car = readExpr();
     removeWhitespace();
     cdr = readPair();
     return { 'type': "pair", 'car': car, 'cdr': cdr };
   }
   
   
-  function read() {
+  function readExpr() {
     removeWhitespace();
-    c = getc();
+    var c = getc();
     if (c) {
       // Numbers
       if ( isNumeric(c) || (c === '-' && isNumeric(peek())) ) {
@@ -193,7 +194,7 @@ function read(source) {
     }
   }
   
-  return read();
+  return readExpr();
 }
 
 
@@ -220,7 +221,7 @@ function setSymbolValue(sym, val) {
 
 function scheme_eval(expr) {
   var type = typeof expr;
-  if (type === 'object') { type = expr.type }
+  if (type === 'object') { type = expr.type; }
   
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
@@ -230,7 +231,7 @@ function scheme_eval(expr) {
     return v;
   }
   else if (type === "the_empty_list") {
-    return { 'type': "the_empty_list" } 
+    return { 'type': "the_empty_list" };
   }
   else if (type === "pair") {
     var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
@@ -245,7 +246,7 @@ function scheme_eval(expr) {
     }
   }
   else {
-    return "Eval - Not implemented"
+    return "Eval - Not implemented";
   }
 }
 
@@ -261,13 +262,13 @@ function printPair(expr) {
     s = s + print(expr.car) + ' ';
     expr = expr.cdr;
   }
-  s = s + print(expr.car)
+  s = s + print(expr.car);
   return s;
 }
 
 function print(expr) {
   var type = typeof expr;
-  if (type === 'object') { type = expr.type }
+  if (type === 'object') { type = expr.type; }
   
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
@@ -282,7 +283,7 @@ function print(expr) {
     return "("+printPair(expr)+")";
   }
   else {
-    return "Eval - Not implemented"
+    return "Eval - Not implemented";
   }
 }
 
@@ -294,6 +295,7 @@ function print(expr) {
 
 // Test read
 (function () {
+  "use strict";
   function st(test, expected) {
     var ret_val = read(test),
         ret_type = ret_val.type;
@@ -341,6 +343,7 @@ function print(expr) {
 
 //Test eval
 (function () {
+  "use strict";
   function st(test, expected) {
     var ret_val = scheme_eval(read(test)),
         ret_type = ret_val.type;
@@ -392,10 +395,11 @@ function print(expr) {
 
 // A simple and very limited repl
 $(document).ready(function () {
+  "use strict";
   $("#run").click(function () {
     var source = $("#entry").val(),
         output = print(scheme_eval(read(source))),
-        output_text = "> "+source+"\n"+output
+        output_text = "> "+source+"\n"+output;
     $("#output").val(output_text);
     $("#entry").val("");
   });
