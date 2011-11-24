@@ -203,7 +203,8 @@ function read(source) {
 // Environments
 //___________________________________________________________________________//
 
-var globalEnvironment = { 'hello':"world", 'bye':"everybody" };
+var globalEnvironment = { 'hello':"world", 'bye':"everybody" },
+    specialForms = {};
 
 function lookupSymbolValue(sym) {
   return globalEnvironment[sym];
@@ -235,18 +236,38 @@ function scheme_eval(expr) {
   }
   else if (type === "pair") {
     var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
-    if (s === "define") {
-      var sym = expr.cdr.car.data,
-          val = scheme_eval(expr.cdr.cdr.car);
-      setSymbolValue(sym, val);
-      return "value set!";
+    
+    if (s in specialForms) {
+      return specialForms[s](expr.cdr);
     }
     else {
-      return "symbol not found";
+      return "Special form not found";
     }
   }
   else {
     return "Eval - Not implemented";
+  }
+}
+
+
+
+//___________________________________________________________________________//
+// Special Forms
+//___________________________________________________________________________//
+
+specialForms['define'] = function (expr) {
+  var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
+  setSymbolValue(s, scheme_eval(expr.cdr.car));
+  return null;
+}
+
+specialForms['if'] = function (expr) {
+  var p = scheme_eval(expr.car);
+  if (p) {
+    return scheme_eval(expr.cdr.car);
+  }
+  else {
+    return scheme_eval(expr.cdr.cdr.car);
   }
 }
 
@@ -268,7 +289,12 @@ function printPair(expr) {
 
 function print(expr) {
   var type = typeof expr;
-  if (type === 'object') { type = expr.type; }
+  if (expr === null) {
+    type = null;
+  }
+  else if (type === 'object') {
+    type = expr.type;
+  }
   
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
@@ -281,6 +307,9 @@ function print(expr) {
   }
   else if (type === "pair") {
     return "("+printPair(expr)+")";
+  }
+  else if (type === null) {
+    return "";
   }
   else {
     return "Eval - Not implemented";
@@ -346,8 +375,8 @@ function print(expr) {
   "use strict";
   function st(test, expected) {
     var ret_val = scheme_eval(read(test)),
-        ret_type = ret_val.type;
-     if (ret_type === "symbol") {
+        ret_type = (ret_val === null) ? null : ret_val.type;
+    if (ret_type === "symbol") {
        ret_val = ret_val.data;
      }
     else if (ret_type === "the_empty_list") {
@@ -384,6 +413,13 @@ function print(expr) {
   // Strings
   st('"I am string"', "I am string");
   
+  // define
+  st("(define a 5)", null);
+  st("a", 5);
+  
+  // if
+  st("(if 1 1 2)", 1);
+  st("(if #f 1 2)", 2);
   
 })();
 
