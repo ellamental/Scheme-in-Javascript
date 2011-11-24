@@ -14,6 +14,10 @@ function Pair(car, cdr) {
 function TheEmptyList() {}
 var the_empty_list = new TheEmptyList();
 
+function Primitive(fn) {
+  this.fn = fn;
+}
+
 
 
 //___________________________________________________________________________//
@@ -225,7 +229,8 @@ function read(source) {
 // Environments
 //___________________________________________________________________________//
 
-var globalEnvironment = { 'hello':"world", 'bye':"everybody" },
+var globalEnvironment = { 'hello':"world", 'bye':"everybody",
+                          '+': new Primitive(function (x, y) { return x+y }) },
     specialForms = {};
 
 function lookupSymbolValue(sym) {
@@ -262,12 +267,25 @@ function scheme_eval(expr) {
       return specialForms[s](expr.cdr);
     }
     else {
-      return "Special form not found";
+      return scheme_apply(scheme_eval(expr.car), eval_args(expr.cdr));
     }
   }
   else {
     return "Eval - Not implemented";
   }
+}
+
+function eval_args(expr) {
+  var args = [];
+  while (!(expr instanceof TheEmptyList)) {
+    args.push(scheme_eval(expr.car));
+    expr = expr.cdr;
+  }
+  return args;
+}
+
+function scheme_apply(prim, args) {
+  return prim.fn.apply(this, args);
 }
 
 
