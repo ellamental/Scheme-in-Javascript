@@ -255,12 +255,18 @@ function scheme_eval(expr) {
 // Special Forms
 //___________________________________________________________________________//
 
+specialForms['scheme-syntax'] = function (expr) {
+  var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
+  specialForms[s] = eval(expr.cdr.car);
+  return null;
+}
+
 specialForms['define'] = function (expr) {
   var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
   setSymbolValue(s, scheme_eval(expr.cdr.car));
   return null;
 }
-
+/* // Defined in the scheme_eval test below
 specialForms['if'] = function (expr) {
   var p = scheme_eval(expr.car);
   if (p) {
@@ -270,7 +276,7 @@ specialForms['if'] = function (expr) {
     return scheme_eval(expr.cdr.cdr.car);
   }
 }
-
+*/
 
 
 //___________________________________________________________________________//
@@ -416,6 +422,17 @@ function print(expr) {
   // define
   st("(define a 5)", null);
   st("a", 5);
+  
+  // scheme-syntax (if p c a) -> returns null and defines if for the if tests below
+  st(['(scheme-syntax if "function (expr) {',
+      '  var p = scheme_eval(expr.car);',
+      '  if (p) {',
+      '    return scheme_eval(expr.cdr.car);',
+      '  }',
+      '  else {',
+      '    return scheme_eval(expr.cdr.cdr.car);',
+      '  }',
+      '}")'].join(""), null);
   
   // if
   st("(if 1 1 2)", 1);
