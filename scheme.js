@@ -1,3 +1,25 @@
+//___________________________________________________________________________//
+// Character tests (isNumeric, isDelimiter, isInitial)
+//___________________________________________________________________________//
+
+function Symbol(data) {
+  this.data = data;
+}
+
+function Pair(car, cdr) {
+  this.car = car;
+  this.cdr = cdr;
+}
+
+function TheEmptyList() {}
+var the_empty_list = new TheEmptyList();
+
+
+
+//___________________________________________________________________________//
+// read
+//___________________________________________________________________________//
+
 function read(source) {
   "use strict";
   var position = 0;
@@ -136,13 +158,13 @@ function read(source) {
     var c = getc(),
         car, cdr;
     if (c === ')') {
-      return { 'type': "the_empty_list" };
+      return the_empty_list;
     }
     ungetc();
     car = readExpr();
     removeWhitespace();
     cdr = readPair();
-    return { 'type': "pair", 'car': car, 'cdr': cdr };
+    return new Pair(car, cdr);
   }
   
   
@@ -174,7 +196,7 @@ function read(source) {
       // Symbols
       else if ( isInitial(c) ) {
         ungetc();
-        return { 'type': 'symbol', 'data': readSymbol() };
+        return new Symbol(readSymbol());
       }
       // Strings
       else if ( c === '"' ) {
@@ -227,15 +249,15 @@ function scheme_eval(expr) {
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
   }
-  else if (type === "symbol") {
+  else if (expr instanceof Symbol) {
     var v = lookupSymbolValue(expr.data);
     return v;
   }
-  else if (type === "the_empty_list") {
-    return { 'type': "the_empty_list" };
+  else if (expr instanceof TheEmptyList) {
+    return the_empty_list;
   }
-  else if (type === "pair") {
-    var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
+  else if (expr instanceof Pair) {
+    var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
     
     if (s in specialForms) {
       return specialForms[s](expr.cdr);
@@ -256,13 +278,13 @@ function scheme_eval(expr) {
 //___________________________________________________________________________//
 
 specialForms['scheme-syntax'] = function (expr) {
-  var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
+  var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
   specialForms[s] = eval(expr.cdr.car);
   return null;
 }
 
 specialForms['define'] = function (expr) {
-  var s = (expr.car.type === "symbol") ? expr.car.data : scheme_eval(expr.car);
+  var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
   setSymbolValue(s, scheme_eval(expr.cdr.car));
   return null;
 }
@@ -285,7 +307,7 @@ specialForms['if'] = function (expr) {
 
 function printPair(expr) {
   var s = "";
-  while (expr.cdr.type !== "the_empty_list") {
+  while (!(expr instanceof TheEmptyList)) {
     s = s + print(expr.car) + ' ';
     expr = expr.cdr;
   }
@@ -305,13 +327,13 @@ function print(expr) {
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
   }
-  else if (type === "symbol") {
+  else if (expr instanceof Symbol) {
     return expr.data;
   }
-  else if (type === "the_empty_list") {
+  else if (expr instanceof TheEmptyList) {
     return "()";
   }
-  else if (type === "pair") {
+  else if (expr instanceof Pair) {
     return "("+printPair(expr)+")";
   }
   else if (type === null) {
@@ -334,11 +356,8 @@ function print(expr) {
   function st(test, expected) {
     var ret_val = read(test),
         ret_type = ret_val.type;
-    if (ret_type === "symbol") {
+    if (ret_val instanceof Symbol) {
       ret_val = ret_val.data;
-    }
-    else if (ret_type === "the_empty_list") {
-      ret_val = ret_val.type;
     }
     if (ret_val !== expected) {
       console.log("test failed: "+test);
@@ -371,7 +390,7 @@ function print(expr) {
   st('"I am string"', "I am string");
   
   // Lists
-  st("()", "the_empty_list");
+  st("()", the_empty_list);
   
 })();
 
@@ -382,12 +401,9 @@ function print(expr) {
   function st(test, expected) {
     var ret_val = scheme_eval(read(test)),
         ret_type = (ret_val === null) ? null : ret_val.type;
-    if (ret_type === "symbol") {
+    if (ret_val instanceof Symbol) {
        ret_val = ret_val.data;
      }
-    else if (ret_type === "the_empty_list") {
-      ret_val = ret_val.type;
-    }
     if (ret_val !== expected) {
       console.log("test failed: "+test);
     }
