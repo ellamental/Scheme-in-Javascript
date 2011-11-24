@@ -244,7 +244,6 @@ function setSymbolValue(sym, val) {
 
 function scheme_eval(expr) {
   var type = typeof expr;
-  if (type === 'object') { type = expr.type; }
   
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
@@ -317,13 +316,7 @@ function printPair(expr) {
 
 function print(expr) {
   var type = typeof expr;
-  if (expr === null) {
-    type = null;
-  }
-  else if (type === 'object') {
-    type = expr.type;
-  }
-  
+
   if (type === "number" || type === "boolean" || type === "string") {
     return expr;
   }
@@ -336,7 +329,7 @@ function print(expr) {
   else if (expr instanceof Pair) {
     return "("+printPair(expr)+")";
   }
-  else if (type === null) {
+  else if (expr === null) {
     return "";
   }
   else {
@@ -354,8 +347,7 @@ function print(expr) {
 (function () {
   "use strict";
   function st(test, expected) {
-    var ret_val = read(test),
-        ret_type = ret_val.type;
+    var ret_val = read(test);
     if (ret_val instanceof Symbol) {
       ret_val = ret_val.data;
     }
@@ -399,11 +391,10 @@ function print(expr) {
 (function () {
   "use strict";
   function st(test, expected) {
-    var ret_val = scheme_eval(read(test)),
-        ret_type = (ret_val === null) ? null : ret_val.type;
+    var ret_val = scheme_eval(read(test));
     if (ret_val instanceof Symbol) {
-       ret_val = ret_val.data;
-     }
+      ret_val = ret_val.data;
+    }
     if (ret_val !== expected) {
       console.log("test failed: "+test);
     }
