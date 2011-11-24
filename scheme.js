@@ -284,8 +284,13 @@ function eval_args(expr) {
   return args;
 }
 
-function scheme_apply(prim, args) {
-  return prim.fn.apply(this, args);
+function scheme_apply(func, args) {
+  if (func instanceof Primitive) {
+    return func.fn.apply(this, args);
+  }
+  else {
+    return "error - undefined procedure";
+  }
 }
 
 
@@ -297,6 +302,15 @@ function scheme_apply(prim, args) {
 specialForms['scheme-syntax'] = function (expr) {
   var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
   specialForms[s] = eval(expr.cdr.car);
+  return null;
+}
+
+// (define-primitive - "function (x, y) { return x-y }")
+// - is not being recognized properly.  The above fails to work.
+specialForms['define-primitive'] = function (expr) {
+  var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
+  var p = new Primitive(eval(expr.cdr.car));
+  globalEnvironment[s] = p;
   return null;
 }
 
@@ -462,6 +476,10 @@ function print(expr) {
   // if
   st("(if 1 1 2)", 1);
   st("(if #f 1 2)", 2);
+  
+  // define-primitive
+  st('(define-primitive * "function (x, y) {return x*y;}")', null);
+  st('(* 3 5)', 15);
   
 })();
 
