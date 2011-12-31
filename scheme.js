@@ -230,7 +230,7 @@ function read(source) {
 //___________________________________________________________________________//
 
 var globalEnvironment = { 'hello':"world", 'bye':"everybody",
-                          '+': new Primitive(function (x, y) { return x+y }) },
+                          '+': new Primitive(function (x, y) { return x+y; }) },
     specialForms = {};
 
 function lookupSymbolValue(sym) {
@@ -303,7 +303,7 @@ specialForms['scheme-syntax'] = function (expr) {
   var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
   specialForms[s] = eval(expr.cdr.car);
   return null;
-}
+};
 
 // (define-primitive - "function (x, y) { return x-y }")
 // - is not being recognized properly.  The above fails to work.
@@ -312,13 +312,13 @@ specialForms['define-primitive'] = function (expr) {
   var p = new Primitive(eval(expr.cdr.car));
   globalEnvironment[s] = p;
   return null;
-}
+};
 
 specialForms['define'] = function (expr) {
   var s = (expr.car instanceof Symbol) ? expr.car.data : scheme_eval(expr.car);
   setSymbolValue(s, scheme_eval(expr.cdr.car));
   return null;
-}
+};
 /* // Defined in the scheme_eval test below
 specialForms['if'] = function (expr) {
   var p = scheme_eval(expr.car);
